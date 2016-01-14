@@ -11,7 +11,8 @@ module.exports = async function (config, callback) {
   const {
     branch = 'master',
     token,
-    transform
+    transforms,
+    filenames
   } = config
 
   try {
@@ -25,14 +26,10 @@ module.exports = async function (config, callback) {
       github.authenticate({type: 'oauth', token})
     }
 
-    const content = await contentFromFilename(github, config)
-    const newContent = transform(content.content)
+    const contents = await contentFromFilename(github, config)
+    const newContents = transforms.map((transform, index) => transform(contents.contents[index], filenames[index]))
 
-    var transformedConfig = {}
-    if (typeof newContent === 'string') transformedConfig.content = newContent
-    else transformedConfig = newContent
-
-    config = defaults(transformedConfig, {sha: content.commit}, config)
+    config = defaults({contents: newContents, sha: contents.commit}, config)
 
     const commit = await updateFileWithContent(github, config)
 

@@ -1,4 +1,4 @@
-const { defaults, pick } = require('lodash')
+const { defaults, includes, pick } = require('lodash')
 const promisify = require('es6-promisify')
 const defaultDefault = require('./default-default')
 
@@ -7,7 +7,7 @@ module.exports = async function contentFromFilename (github, config) {
     branch: 'master'
   })
 
-  const { branch, filename } = config
+  const { branch, filenames } = config
 
   const addRepo = defaultDefault(pick(config, ['user', 'repo']))
 
@@ -16,14 +16,18 @@ module.exports = async function contentFromFilename (github, config) {
 
     const { tree } = await promisify(github.gitdata.getTree)(addRepo({sha: head.object.sha}))
 
-    const { sha } = tree.find((object) => object.path === filename)
+    const shas = tree
+    .filter((object) => includes(filenames, object.path))
+    .map((object) => object.sha)
 
-    if (!sha) return Promise.reject(new Error(`Couldn't find ${filename}.`))
+    // if (!shas.length) return Promise.reject(new Error(`Couldn't find ${filenames.join(', ')}.`))
 
-    const blob = await promisify(github.gitdata.getBlob)(addRepo({sha}))
+    let blobs = await Promise.all(shas.map((sha) => promisify(github.gitdata.getBlob)(addRepo({sha}))))
+
+    blobs = blobs.map((blob) => (new Buffer(blob.content, 'base64')).toString())
 
     return Promise.resolve({
-      content: (new Buffer(blob.content, 'base64')).toString(),
+      contents: blobs,
       commit: head.object.sha
     })
   } catch (err) {
