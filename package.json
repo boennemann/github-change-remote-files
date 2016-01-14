@@ -1,5 +1,6 @@
 {
   "name": "@boennemann/github-change-remote-files",
+  "version": "0.0.0-placeholder",
   "description": "create a new commit with a changed file",
   "main": "dist/index.js",
   "scripts": {
