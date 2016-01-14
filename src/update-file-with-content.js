@@ -10,15 +10,6 @@ module.exports = async function (github, config) {
   const addRepo = defaultDefault(pick(config, ['user', 'repo']))
 
   try {
-    console.log(sha)
-    console.log(filenames.map((filename, index) => {
-      return {
-        path: filename,
-        mode: '100644',
-        type: 'blob',
-        content: contents[index]
-      }
-    }))
     const tree = await promisify(github.gitdata.createTree)(addRepo({
       base_tree: sha,
       tree: filenames.map((filename, index) => {
