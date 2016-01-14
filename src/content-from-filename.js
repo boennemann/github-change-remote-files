@@ -1,4 +1,4 @@
-const { defaults, includes, pick } = require('lodash')
+const { defaults, indexOf, pick } = require('lodash')
 const promisify = require('es6-promisify')
 const defaultDefault = require('./default-default')
 
@@ -16,15 +16,20 @@ module.exports = async function contentFromFilename (github, config) {
 
     const { tree } = await promisify(github.gitdata.getTree)(addRepo({sha: head.object.sha}))
 
-    const shas = tree
-    .filter((object) => includes(filenames, object.path))
-    .map((object) => object.sha)
+    let shas = []
+
+    tree.forEach((object) => {
+      var index = indexOf(filenames, object.path)
+      if (!~index) return
+
+      shas[index] = object.sha
+    })
 
     // if (!shas.length) return Promise.reject(new Error(`Couldn't find ${filenames.join(', ')}.`))
 
-    let blobs = await Promise.all(shas.map((sha) => promisify(github.gitdata.getBlob)(addRepo({sha}))))
+    let blobs = await Promise.all(shas.map((sha) => sha ? promisify(github.gitdata.getBlob)(addRepo({sha})) : null))
 
-    blobs = blobs.map((blob) => (new Buffer(blob.content, 'base64')).toString())
+    blobs = blobs.map((blob) => blob && blob.content ? (new Buffer(blob.content, 'base64')).toString() : null)
 
     return Promise.resolve({
       contents: blobs,
