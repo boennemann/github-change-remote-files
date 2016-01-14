@@ -1,5 +1,5 @@
 {
-  "name": "github-change-remote-file",
+  "name": "@boennemann/github-change-remote-files",
   "description": "create a new commit with a changed file",
   "main": "dist/index.js",
   "scripts": {
@@ -49,13 +49,7 @@
     "github": "^0.2.4",
     "lodash": "^3.10.0"
   },
-  "release": {
-    "branch": "next",
-    "fallbackTags": {
-      "next": "latest"
-    }
-  },
   "publishConfig": {
-    "tag": "next"
+    "access": "public"
   }
 }
