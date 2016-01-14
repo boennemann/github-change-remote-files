@@ -1,6 +1,6 @@
 require('babel-core/polyfill')
 
-const { defaults } = require('lodash')
+const { clone, defaults } = require('lodash')
 const GitHubApi = require('github')
 const promisify = require('es6-promisify')
 
@@ -8,6 +8,8 @@ const contentFromFilename = require('./content-from-filename')
 const updateFileWithContent = require('./update-file-with-content')
 
 module.exports = async function (config, callback) {
+  config = clone(config, true)
+
   const {
     branch = 'master',
     token,
